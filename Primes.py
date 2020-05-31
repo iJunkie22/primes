@@ -121,7 +121,7 @@ class PrimeDB(object):
         :rtype: slice
         """
         latestPrime = self.foundPrimes[-1]
-        return slice(latestPrime + 1, ((latestPrime * 2) - 1), 1)
+        return slice(latestPrime + 1, (latestPrime * 2), 1)
 
     # def flush(self):
     #     with self._foundPrimesBufferLock:
@@ -226,18 +226,22 @@ class PrimeDB(object):
         startTime = time.clock()
 
         lastProcessedCandidate = 0
-        while lastProcessedCandidate < EndOfCandidatePrimeRange:
+        while (lastProcessedCandidate + 1) < EndOfCandidatePrimeRange:
             s = self.testableSlice()
             xStart = s.start
             xStep = s.step
             xStop = min((s.stop, EndOfCandidatePrimeRange))
+            if (xStart == xStop) or (xStop <= lastProcessedCandidate):
+                print("{}->{}".format(xStart, xStop))
+                xStart = max((xStart, lastProcessedCandidate + 1))
+                xStop = xStart + 1
             # print("Processing {}->{}".format(xStart, xStop))
             inputs, allCurrentTestableCandidates = itertools.tee(xrange(xStart, xStop, xStep), 2)
             outputs = pool.map(self.testPrime, inputs)
             newFoundPrimes = list(itertools.compress(allCurrentTestableCandidates, outputs))
             foundPrimeCount += len(newFoundPrimes)
             self.foundPrimes.extend(newFoundPrimes)
-            lastProcessedCandidate = xStop
+            lastProcessedCandidate = xStop - 1
             print("Processed {}->{}".format(xStart, xStop))
 
         endTime = time.clock()
@@ -266,9 +270,9 @@ def main(CandidateCount, PoolCount, DBFileName="primes2.bin"):
     else:
         primeDb.resume3(CandidateCount, PoolCount)
 
-    primeDb.storeToFileSmall()
+    primeDb.storeToFileSmall(DBFileName)
 
 
 if __name__ == '__main__':
     # main(10000, 0)
-    main(30000, 3)
+    main(100000, 3, "primes3.bin")

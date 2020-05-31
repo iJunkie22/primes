@@ -1,0 +1,15 @@
+
+*.bin
+*.zip
+*.pyc
+*.db
+*.txz
+*.cpgz
+*.o
+*.so
+prime_pct_graph.png
+main_PRIMES_T.html
+primes2.c
+primes_dump.sql
+run_primes.sh
+run_primes2.py
